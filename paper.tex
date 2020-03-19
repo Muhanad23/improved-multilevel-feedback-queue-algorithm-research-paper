@@ -14,7 +14,7 @@
 \title{Conference Paper Title*\\
 {\footnotesize \textsuperscript{*}Note: Sub-titles are not captured in Xplore and
 should not be used}
-\thanks{Identify applicable funding agency here. If none, delete this.}
+% \thanks{Identify applicable funding agency here. If none, delete this.}
 }
 
 \author{\IEEEauthorblockN{Khaled Amgad\IEEEauthorrefmark{1},
@@ -45,17 +45,9 @@ component, formatting, style, styling, insert
 
 Scheduling is a crucial part in many real-time applications such as scheduling airlines and railways communications, products manufacturing processes, data packets routing in computer networks and pipe networks. Operating systems multiprocessing environments are no different than those mediums mentioned, where processes compete over CPU utilization. This brought to existence the need for scheduling algorithms to justly assign processes to available CPUs in favour of optimising performance measures, in particular, to maximize overall CPU utilization and throughput, and to minimize response time, waiting time and turnaround time. A schedular could be preemptive where it can temporarily interrupt a process without its cooperation and assign the CPU resources to a different process with the intention to assign them back to the former process, such operation is called context switching, or it could be non-preemptive (cooperative) by not being able to context switch between processes. Various preemptive and non-preemptive scheduling disciplines exist such as, first come, first serve (FCFS), shortest job first (SJF), shortest remaining time first (SRTF), round-robin (RR), multilevel queue and multilevel feedback queue. In FCFS, processes are non-preemptively executed according to their arrival time. In SJF, the CPU is assigned to the process with the smallest burst time. SRTF is a preemptive version of SJF where at each iteration, the process with the least remaining burst time takes control of the CPU. Round-robin preemptively assigns the CPU to each process in the ready queue for a static amount of time called quantum and executes them in an FCFS fashion. Multilevel queue algorithm partitions the ready queue into several queues to which processes are perpetually assigned and are executed according to another scheduling algorithm (e.g. RR). Processes cannot move from one queue to another. However, in multilevel feedback queue algorithm, processes that don't terminate in one queue, due to having CPU burst time more than the time quantum assigned to their particular queue, are shifted to a lower priority queue. Due to the fact that long processes eventually sink to the lowest priority queue, they are carried out using FCFS to prevent starvation. Several papers discuss different methods to optimize the algorithms mentioned, each come with their set of advantages and drawbacks. One of many is Paper [], whose approach achieves better average response time but at the cost of hindering the scheduling process due to recalculating time quantum for each queue using a recurrent neural network. Our proposed approach implements the best of all worlds regarding paper [] and [] by avoiding each drawback and optimising their advantages.
 
-\section{Ease of Use}
+\section{Related Work}
 
-\subsection{Maintaining the Integrity of the Specifications}
-
-The IEEEtran class file is used to format your paper and style the text. All margins, 
-column widths, line spaces, and text fonts are prescribed; please do not 
-alter them. You may note peculiarities. For example, the head margin
-measures proportionately more than is customary. This measurement 
-and others are deliberate, using specifications that anticipate your paper 
-as one part of the entire proceedings, and not as an independent document. 
-Please do not revise any of the current designations.
+Several papers proposed various types of approaches to improve the overall efficiency of the multilevel feedback queue scheduling algorithm. The chosen quantum time for each queue plays a major role. For instance, in paper [] The highest priority queue has been given a relatively low quantum period, and as the priority of a queue decreases, its quantum gets multiplied by a constant which greatly prevents starvation for lower priority processes. Hence, it is essential to choose a proper method to compute the time quantum value to minimize response time and maximize overall performance. In paper [6], a new algorithm is presented for solving these drawbacks and minimizing the response time. In this algorithm, a Recurrent Neural Network was used to determine both the number of queues and the optimized time quantum value for each queue. The RNN generates the most effective model to compute the time quantum value. Their proposed intelligent version of the MLFQ promises good results, however, it suffers from a few drawbacks, the first being the direct proportionality of its network learning time and the amount of input data, and the second is the possibility of experiencing initial overhead at the first iterations of the algorithm. Our approach uses an optimized version of RR named shortest remaining burst round-robin (SRBRR) as in paper [4] avoids the learning time in paper [6]. Regarding MLFQ, various approaches have been made and researches have been carried to improve its efficiency. Those attempts dealt with starvation by assigning different quantum values to the ready queues depending on their priority. However, our approach deals with starvation not by only having dynamic quantum value but by boosting processes from lower priority queues to higher ones according to a specific policy.
 
 \section{Prepare Your Paper Before Styling}
 Before you begin to format your paper, first write and save the content as a 
