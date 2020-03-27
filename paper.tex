@@ -3,12 +3,25 @@
 % The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
-\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% \makeatletter
+% % \newcommand\fs@norules{\def\@fs@cfont{\bfseries}\let\@fs@capt\floatc@ruled
+% %     \def\@fs@pre{}%
+% %     \def\@fs@post{}%
+% %     \def\@fs@mid{\kern3pt}%
+% %     \let\@fs@iftopcapt\iftrue}
+% \makeatother
+% \floatstyle{norules}
+% \restylefloat{algorithm}
+
+
 \begin{document}
 
 \title{Conference Paper Title*\\
@@ -58,9 +71,58 @@ For a multilevel feedback queue scheduling algorithm, three parameters should be
 
 Those procedures are repeated for all the generated queues until all processes reach the lowest priority queue where they are rescheduled until their completion. 
 
-\subsection{Pseudo Code of the Proposed Algorithm}
+\subsection{Proposed Algorithm}
 
-\subsection{Flow Chart of the Proposed Algorithm}
+\begin{algorithm}[H]
+    \caption{Enhanced Multilevel FeedBack Queue Scheduling Algorithm}
+    \begin{algorithmic}[1]
+    \Procedure {EMLFQ}{Number of processes $n$, priority of each process $\alpha_{i}$, burst time of each process $\beta_{i}$}
+    % Return  Average waiting time, throughput
+    \Statex Declaration and Initialisation:
+    \State Queue $Q_{i}$ where $i \in \{0, 1, 2, 3, 4\}$, waiting time $\omega_{i} = 0$ of $P_{i}$, quantum time $\Gamma$, quantum time index $\gamma$
+        \For {$i = 0$ to $n$}
+            \State \textbf{Assign} $P_{i}$ to $Q_{\alpha_{i}}$
+        \EndFor
+    \Statex Loop Process:
+        \State $i = 0$
+        \While {$Q_{i}$ is NOT empty}
+            % Aging Processes
+            \For{$j = i + 1$ to $5$}
+                \If{$1-\omega_{\theta}/\beta_{\theta} < 0.95$ for $\theta \in Q_{j}$}
+                    \State \textbf{Promote} $P_{\theta}$ to the current queue $Q_{i}$
+                \EndIf
+            \EndFor
+            
+            % Calculating the quantum time value
+            \Statex Calculating the quantum time value:
+            \State $ascending\_sort(\beta_{Q_{i}})$
+            \State $\gamma = Q_{i}.size()/2 + i$
+            \State $\Gamma = \beta_{\gamma}$ where $\beta_{\gamma} \in Q_{i}$
+            % Assigning the quantum value to each process in the queue
+            \Statex Assigning the Quantum Value to each Process:
+            \For{$P_{j}$ in $Q_{i}$}
+                \State $\beta_{j} = \beta_{j} - \Gamma$
+                \If{$\beta_{j} <= 0$}
+                    \State \textbf{Remove} $P_{j}$ from $Q_{i}$
+                \ElsIf {$i < 4$}
+                    \State \textbf{Downgrade} $P_{j}$ to $Q_{i+1}$
+                \EndIf
+            \EndFor
+            % Increment waiting time
+            \Statex Increment Waiting Time:
+            \For{$j = 0$ to $n$}
+                \State $\omega_{j} = \omega_{j} + 1$
+            \EndFor
+            \Statex Increment Queue Index
+            \If{$i < 4$}
+                \State $i = i + 1$
+            \EndIf
+        \EndWhile
+     \EndProcedure
+    \end{algorithmic}
+\end{algorithm}
+    
+\subsection{Flowchart of the Proposed Algorithm}
 
 \section{Prepare Your Paper Before Styling}
 Before you begin to format your paper, first write and save the content as a 
