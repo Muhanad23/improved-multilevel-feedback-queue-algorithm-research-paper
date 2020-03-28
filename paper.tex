@@ -11,15 +11,13 @@
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
-% \makeatletter
-% % \newcommand\fs@norules{\def\@fs@cfont{\bfseries}\let\@fs@capt\floatc@ruled
-% %     \def\@fs@pre{}%
-% %     \def\@fs@post{}%
-% %     \def\@fs@mid{\kern3pt}%
-% %     \let\@fs@iftopcapt\iftrue}
-% \makeatother
-% \floatstyle{norules}
-% \restylefloat{algorithm}
+\makeatletter
+\newcommand\fs@norules{\def\@fs@cfont{\bfseries}\let\@fs@capt\floatc@ruled
+    \def\@fs@pre{}%
+    \def\@fs@post{}%
+    \def\@fs@mid{\kern3pt}%
+    \let\@fs@iftopcapt\iftrue}
+\makeatother
 
 
 \begin{document}
@@ -72,7 +70,8 @@ For a multilevel feedback queue scheduling algorithm, three parameters should be
 Those procedures are repeated for all the generated queues until all processes reach the lowest priority queue where they are rescheduled until their completion. 
 
 \subsection{Proposed Algorithm}
-
+\floatstyle{norules}
+\restylefloat{algorithm}
 \begin{algorithm}[H]
     \caption{Enhanced Multilevel FeedBack Queue Scheduling Algorithm}
     \begin{algorithmic}[1]
@@ -110,7 +109,7 @@ Those procedures are repeated for all the generated queues until all processes r
             \EndFor
             % Increment waiting time
             \Statex Increment Waiting Time:
-            \For{$j = 0$ to $n$}
+            \For{$j = 0$ to $n$ \textbf{and} $P_{j} \notin Q_{i}$}
                 \State $\omega_{j} = \omega_{j} + 1$
             \EndFor
             \Statex Increment Queue Index
@@ -121,8 +120,6 @@ Those procedures are repeated for all the generated queues until all processes r
      \EndProcedure
     \end{algorithmic}
 \end{algorithm}
-    
-\subsection{Flowchart of the Proposed Algorithm}
 
 \section{Prepare Your Paper Before Styling}
 Before you begin to format your paper, first write and save the content as a 
