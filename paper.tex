@@ -27,6 +27,9 @@
 \tikzstyle{decision} = [diamond, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=white]
 \tikzstyle{arrow} = [thick,->,>=stealth]
 
+\newcommand\T{\rule{0pt}{2.6ex}}       % Top strut
+\newcommand\B{\rule[-1.2ex]{0pt}{0pt}} % Bottom strut
+
 \begin{document}
 
 \title{Conference Paper Title*\\
@@ -71,7 +74,7 @@ Several papers proposed various types of approaches to improve the overall effic
 
 For a multilevel feedback queue scheduling algorithm, three parameters should be considered. The first being the chosen scheduling algorithm for each queue, especially the last queue as its scheduling algorithm must help treat starvation. The second is the criteria according to which a process priority should be increased based on its waiting time in its particular ready-queue, this technique is also known as Aging. The third is the criteria according to which a process priority should be decreased. In our proposed algorithm, there are 5 queues sorted in ascending order in line with their priority number, 0 being the highest priority and 4 being the lowest. Each queue uses a modified version of the round-robin scheduling algorithm stated in \cite{b3}. In \cite{b3}, processes are sorted in ascending order according to their burst time and are assigned a time quantum that equals the median burst time of those processes. This dynamic quantum time RR algorithm provides better turnaround time and waiting time than the standard static quantum time RR algorithm whose quantum if set too short, leads to many context switches and if set too long, morphs the algorithm into an FCFS algorithm. The proposed alteration on the stated algorithm in \cite{b3} is that each queue quantum time isn't exactly the median burst time, but the burst time whose index is shifted from the median value towards the higher burst time values with a step count equal to its queue number, hence, the gradual increase of quantum time as priority decreases. For clarification, a queue with priority equal 2 has the following processes denoted by their burst time: 100, 300, 550, 600, 620, 700, 720, 900, 1200, the median value is 620, assuming we are using zero-based numbering, its index equals 4, and since we are in a queue whose priority equals 2, therefore the quantum slice value according to the proposed approach equals the burst value at index 6 (as in 4 + 2) which is 720. If the processes of a certain queue didn't terminate after assigning its queue quantum time, they are shifted downwards to the next lower priority queue. After introducing new processes into a queue, the quantum time slice is recalculated. Processes age whenever they are in a queue whose priority is one less than that currently getting scheduled and satisfies the following inequality:
 \begin{equation}
-1 - \frac{waiting \; time \; of \; P}{burst \; time \; of \; P} < 0.95\label{eq}
+1 - \frac{waiting \; time \; of \; P}{burst \; time \; of \; P} < 0.95\label{eq1}
 \end{equation}
 
 Those procedures are repeated for all the generated queues until all processes reach the lowest priority queue where they are rescheduled until their completion. 
@@ -160,6 +163,203 @@ Those procedures are repeated for all the generated queues until all processes r
      \EndProcedure
     \end{algorithmic}
 \end{algorithm}
+
+\section{Experimental Analysis}
+
+\subsection{Assumptions}
+
+The proposed scheduling algorithm is software replicated using Python scripts which simulate scheduling independent CPU-bound processes with predetermined burst time, arrival time and the queue to which they belong on a single processor environment which guarantees that no more than a single process uses the CPU at any arbitrary moment.
+
+\subsection{Experimental Scheme}
+
+On one hand, the input arguments to the proposed algorithm implementation are the number of processes to be scheduled, burst time, arrival time and the queue to which they belong to. On the other hand, output parameters are the average waiting time, average turnaround time and throughput. The following equations are used to calculate the previously mentioned output parameters:
+
+\begin{equation}
+    Average\; Waiting\; Time =  \frac{Total \; Waiting \; Time}{Number \; of \; Processes} \label{eq2}
+\end{equation}
+
+\begin{equation}
+    Average\; Turnaround\; Time =  \frac{Total \; Turnaround \; Time}{Number \; of \; Processes} \label{eq3}
+\end{equation}
+
+\begin{equation}
+    Throughput =  \frac{Number \; of \; Executed \; Processes}{Total \; Execution \; Time} \label{eq4}
+\end{equation}
+
+\vspace{5mm}
+
+\subsection{Performance Metrics}
+
+As a means to have a concrete viable evaluation of either the proposed algorithm or any other scheduling algorithm, the output parameters are taken into consideration for analysis. Since the average waiting time indicates the average time that a  process has to starve for, therefore the lower the average waiting time is the better. The same principle applies to the average turnaround time and the number of context switches, as the former implies the average time spent by the process since its arrival time to its completion and the latter costs time as the CPU is assigned back and forth between different processes. Contrarily to the prior metrics, the larger the throughput is the better as it indicates the number of processes that are completely executed per unit time.
+
+\subsection{Simulation}
+
+For the sake of showcasing the proposed algorithm, a number of processes, their predetermined burst time and arrival time are taken as input to a Python simulation script. Suppose that the input to the script is according to the following table:
+
+\begin{table}[H]
+    \caption{}
+    \centering
+     \begin{tabular}{||c c c c||} 
+     \hline
+     \textit{\textbf{Process}} & \textit{\textbf{Arrival Time}} & \textit{\textbf{Burst Time}} & \textit{\textbf{Queue}} \T \B \\ 
+     \hline
+     \hline
+     1 & 0 & 60 & 1 \T \B \\ 
+     \hline
+     2 & 0 & 50 & 1 \T \B \\
+     \hline
+     3 & 0 & 40 & 2 \T \B \\
+     \hline
+     4 & 0 & 30 & 2 \T \B \\
+     \hline
+     5 & 0 & 10 & 3 \T \B \\ 
+     \hline
+     6 & 0 & 210 & 3 \T \B \\ 
+     \hline
+     7 & 0 & 200 & 3 \T \B \\ 
+     \hline
+     \end{tabular}
+     \label{table1}
+\end{table}
+
+According to the proposed algorithm, the time quanta calculated are as follows:
+
+\begin{table}[H]
+    \caption{}
+    \centering
+     \begin{tabular}{||c c||} 
+     \hline
+     \textit{\textbf{Queue}} & \textit{\textbf{Quantum Value}} \T \B \\ 
+     \hline
+     \hline
+     1 & 55 \T \B \\ 
+     \hline
+     2 & 40 \T \B \\
+     \hline
+     3 & 615 \T \B \\
+     \hline
+     4 & 0 \T \B \\
+     \hline
+     5 & 0 \T \B \\ 
+     \hline
+     \end{tabular}
+\end{table}
+
+All processes are sorted ascendingly according to their remaining time scheduled in their respective queue through assigning the time quantum calculated for each queue. The time spent scheduling a particular queue is the waiting time for the subsequent queues.
+
+The scheduling process goes as follows:
+
+\begin{figure}[H]
+        \begin{center}
+        \begin{tabular}{|c|c|}
+         \hline
+            $P_{2}$ & $P_{1}$\T\B\\ 
+         \hline
+        \end{tabular}
+        \end{center}
+        \begin{center}
+            \begin{tabular}{c c c}
+                   0 & 50 & 105\\ 
+            \end{tabular}
+        \end{center}
+    \caption{$Q_{1}$ Gantt Chart}
+\end{figure}
+
+Considering that each process in $Q_{1}$ is assigned a quantum value of $50$, as we reach the last process in $Q_{1}$, the total time consumed equals $105$, which happens to be the time that all the other processes have to wait for in the subsequent queues hence the increase of their waiting time by $105$ units of time.
+
+\begin{figure}[H]
+    \begin{center}
+    \begin{tabular}{|c|c|c|c|}
+     \hline
+        $P_{1}$ & $P_{5}$ & $P_{4}$ & $P_{3}$\T\B\\ 
+     \hline
+    \end{tabular}
+    \end{center}
+    \begin{center}
+        \begin{tabular}{c c c c c}
+               105 & 110 & 120 & 150 & 190\\ 
+        \end{tabular}
+    \end{center}
+\caption{$Q_{2}$ Gantt Chart}
+\end{figure}
+
+
+Even though $P_{5}$ is assigned to $Q_{3}$ as in Table \ref{table1}, it was promoted to $Q_{2}$ due to satisfying (\ref{eq1}).
+
+\begin{figure}[H]
+    \begin{center}
+    \begin{tabular}{|c|c|}
+     \hline
+        P7 & P6\T\B\\ 
+     \hline
+    \end{tabular}
+    \end{center}
+    \begin{center}
+        \begin{tabular}{c c c}
+               190 & 390 & 600\\ 
+        \end{tabular}
+    \end{center}
+\caption{$Q_{3}$ Gantt Chart}
+\end{figure}
+
+Whenever processes reach the lowest queue precompletion, they are scheduled using the RR scheduling algorithm with a relatively large quantum time value which is in most cases similar to using the FCFS algorithm because, as the time quantum value of the RR algorithm tends to infinity which could practically be a very large number relative to the available processes remaining time, the algorithm tends to morph into the FCFS algorithm. This procedure is repeated until all the processes are finished. Simulation results are shown in the table below:
+
+\begin{table}[H]
+    \caption{}
+    \centering
+     \begin{tabular}{||c c c||} 
+     \hline
+     \textit{\textbf{Average Turnaround Time}} & \textit{\textbf{Average Waiting Time}} & \textit{\textbf{Throughput}}\T \B \\ 
+     \hline
+     \hline
+     1 & 0 & 60 \T \B \\ 
+     \hline
+     \end{tabular}
+\end{table}
+
+\subsection{Performance Comparisons}
+
+To assess the performance of the proposed algorithm implementation, a varying number of processes is taken in six different experiments as input to the Python simulation script. In each experiment, the output of the proposed algorithm implementation is compared to the output of another scheduling algorithm implementation such as standard MLFQ with static quantum RR and other variants of MLFQ and RR addressed in different papers.
+
+\subsubsection{Experiment 1}
+
+In this experiment, the proposed algorithm results are compared against both a static and a dynamic version of the RR algorithm addressed in \cite{b1}. 
+
+\begin{table}[H]
+    \caption{Experiment 1 Input}
+    \centering
+     \begin{tabular}{||c c c c||} 
+     \hline
+     \textit{\textbf{Process}} & \textit{\textbf{Arrival Time}} & \textit{\textbf{Burst Time}} & \textit{\textbf{Queue}} \T \B \\ 
+     \hline
+     \hline
+     1 & 1 & 25 & 1 \T \B \\ 
+     \hline
+     2 & 5 & 70 & 1 \T \B \\
+     \hline
+     3 & 6 & 84 & 1 \T \B \\
+     \hline
+     4 & 7 & 17 & 1 \T \B \\
+     \hline
+     5 & 8 & 35 & 1 \T \B \\ 
+     \hline
+     \end{tabular}
+     \label{table1}
+\end{table}
+
+\begin{table}[H]
+    \caption{Experiment 1 Results}
+    \centering
+    \begin{tabular}{c c c||}
+    \cline{2-3}
+    \cline{2-3}
+    \multicolumn{1}{c||}{} & \textit{\textbf{Average Turnaround Time}} & \textit{\textbf{Average Waiting Time}}\T \B \\
+    \hline
+    \multicolumn{1}{||c}{\textit{\textbf{Proposed Algorithm}}} & 115 & 68.8 \T \B\\ \hline
+    \multicolumn{1}{||c}{\textit{\textbf{Static RR}}} & 161.4 & 116.2 \T \B\\ \hline
+    \multicolumn{1}{||c}{\textit{\textbf{Dynamic RR}}} & 150.8 & 107.6\T \B\\ \hline
+     \end{tabular}
+\end{table}
 
 \section{Prepare Your Paper Before Styling}
 Before you begin to format your paper, first write and save the content as a 
