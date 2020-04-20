@@ -125,36 +125,34 @@ Those procedures are repeated for all the generated queues until all processes r
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Pseudocode Flowchart of the Proposed Approach}
-\vspace{5mm}
-\begin{tikzpicture}[node distance=2cm]
+\begin{tikzpicture}[node distance=2.2cm]
 
     \node (start) [startstop] {Start};
     \node (in1) [io, below of=start, text width = 2cm] {Read Processes Data};
-    \node (pro1) [process, below of=in1, text width = 3cm] {Assign processes to their respective queue};
-    \node (dec1) [decision, below of=pro1, text width = 2cm, yshift=-1cm] {All queues are empty};
-    \node (end) [startstop, left of=dec1, xshift=-2cm] {End};
-    \node (pro2) [process, below of=dec1, text width= 3cm, yshift = -1cm] {Iterate on non-empty queues $Q$};
-    \node (dec2) [decision, below of=pro2, text width = 2cm, yshift=-1cm] {A process $P_{j}$ in $Q_{i+1}$ is boostable};
-    \node (pro3) [process, left of=dec2, text width= 3cm, xshift= -2.2cm] {Promote $P_{j}$ to $Q_{i}$};
-    \node (pro4) [process, below of=dec2, text width= 3cm, yshift=-1.2cm] {Calculate the quantum time value $\Gamma$ of $Q_{i}$};
-    \node (pro5) [process, below of=pro4, text width= 3cm] {Assign $\Gamma$ to $Q_{i}$ processes};
-    \node (pro6) [process, below of=pro5, text width= 3cm] {Downgrade incomplete processes to $Q_{i+1}\,:\,i+1 < 5$};
-    \node (pro7) [process, below of=pro6, text width= 3cm] {Increment waiting time of $P_{j} \notin Q_{i}$};
+    \node (dec1) [decision, below of=in1, text width = 2cm, yshift=-1cm] {All processes are finished};
+    \node (pro1) [process, below of=dec1, text width= 3cm, yshift = -1cm] {Iterate on queues $Q$};
+    \node (pro2) [process, below of=pro1, text width = 3cm] {Assign eligable processes to the current queue};
+    \node (out1) [io, left of=dec1, text width = 2cm, xshift= -2cm] {Print avg. waiting time, avg. turnaround time, throughput};
+    \node (end) [startstop, below of=out1, yshift=-1cm] {End};
+    \node (dec2) [decision, below of=pro2, text width = 2cm, yshift=-2cm] {A process $P$ in the subsequent queue is boostable};
+
+    \node (pro3) [process, left of=dec2, text width= 3cm, xshift= -2.5cm] {Promote $P$ to current queue};
+    \node (pro4) [process, below of=dec2, text width= 3cm, yshift=-2.2cm] {Calculate the quantum time value $\phi$};
+    \node (pro5) [process, below of=pro4, text width= 3cm] {Schedule processes in current queue};
     
     \draw [arrow] (start) -- (in1);
-    \draw [arrow] (in1) -- (pro1);
-    \draw [arrow] (pro1) -- (dec1);
-    \draw [arrow] (dec1) -- node[anchor=west, above] {Yes} (end);
-    \draw [arrow] (dec1) -- node[anchor=south, left] {No} (pro2);
+    \draw [arrow] (in1) -- (dec1);
+    % \draw [arrow] (pro1) -- (dec1);
+    \draw [arrow] (dec1) -- node[anchor=west, above] {Yes} (out1);
+    \draw [arrow] (out1) -- (end);
+    \draw [arrow] (dec1) -- node[anchor=south, left] {No} (pro1);
+    \draw [arrow] (pro1) -- (pro2);
     \draw [arrow] (pro2) -- (dec2);
     \draw [arrow] (dec2) -- node[anchor=west,above] {Yes} (pro3);
-    \draw [arrow] (pro3.north) -- ++ (0,1.3) -- ++ (4.2,0);
+    \draw [arrow] (pro3.north) -- ++ (0,3.7) -- ++ (3.1,0);
     \draw [arrow] (dec2) -- node[anchor=south, left] {No} (pro4);
     \draw [arrow] (pro4) -- (pro5);
-    \draw [arrow] (pro5) -- (pro6);
-    \draw [arrow] (pro6) -- (pro7);
-    \draw [arrow] (pro7.west) -- ++ (-4.5,0) -- ++(0,16.8) -- ++(6.1,0);
-    
+    \draw [arrow] (pro5.east) -- ++ (1.2,0) -- ++(0,16.2) -- ++(-1.3,0);
     \end{tikzpicture}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -162,54 +160,66 @@ Those procedures are repeated for all the generated queues until all processes r
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Proposed Algorithm}
-\floatstyle{norules}
+% \floatstyle{norules}
 \restylefloat{algorithm}
 \begin{algorithm}[H]
-    \caption{Enhanced Multilevel FeedBack Queue Scheduling Algorithm}
+    \caption{Developed Multilevel Feedback Queue Scheduling Algorithm}
+    \hspace*{\algorithmicindent} \textbf{Input:} Number of processes $n$, processes priority $\alpha$\\
+    \hspace*{\algorithmicindent} burst time values $\beta$, arrival time values $\sigma$, \\
+    \hspace*{\algorithmicindent} context switching cost $\epsilon$\\
+    \hspace*{\algorithmicindent} \textbf{Output:} Average turnaround time, average waiting time,\\
+    \hspace*{\algorithmicindent} throughput
     \begin{algorithmic}[1]
-    \Procedure {EMLFQ}{Number of processes $n$, priority of each process $\alpha_{i}$, burst time of each process $\beta_{i}$}
+    \Procedure {DMLFQ}{}
     % Return  Average waiting time, throughput
     \Statex Declaration and Initialisation:
-    \State Queue $Q_{i}$ where $i \in \{0, 1, 2, 3, 4\}$, waiting time $\omega_{i} = 0$ of $P_{i}$, quantum time $\Gamma$, quantum time index $\gamma$
-        \For {$i = 0$ to $n$}
-            \State \textbf{Assign} $P_{i}$ to $Q_{\alpha_{i}}$
-        \EndFor
-    \Statex Loop Process:
-        \State $i = 0$
-        \While {$Q_{i}$ is NOT empty}
-            % Aging Processes
-            \For{$j = i + 1$ to $5$}
-                \If{$1-\omega_{\theta}/\beta_{\theta} < 0.95$ for $\theta \in Q_{j}$}
-                    \State \textbf{Promote} $P_{\theta}$ to the current queue $Q_{i}$
-                \EndIf
+    \State Queue $Q_{i}$ where $i \in \{1, 2, 3, 4, 5\}$
+    \State Turnaround time values $\tau$
+    \State Finish time values $\lambda$
+    \State Waiting time values $\theta$
+    \State Remaining time values $\mu = \beta$
+    \State Quantum time value $\phi$
+    \State Number of context switches $\delta$
+        \State$time = 0$
+        \While{$\exists P \in Q$}
+            \For{$i = 1$ to $5$}
+                \For{$j = 1$ to $n$}
+                    \If{$\sigma_{j} <= time$ and $\alpha_{j}$ equals $i$}
+                        \State \textit{\textbf{Assign}} $P_{j}$ to $Q_{i}$
+                    \EndIf
+                    \State $waitingTime = time - \sigma_{j}$
+                    \If{$i < 5$ and $waitingTime/\mu_{j} >= 1$ and $\alpha_{j}$ equals $i + 1$ and  $\sigma_{j} <= time$}
+                        \State \textit{\textbf{Assign}} $P_{j}$ to $Q_{i}$
+                    \EndIf
+                \EndFor
+                \State Sort $Q_{i}$ in ascending order according to remaining time values
+                \State $\phi = median\; value\; of\; Q_{i} * i$
+                \algrenewcommand\algorithmicfor{\textbf{foreach}}
+                \For{$P_{j} \in Q_{i}$}
+                    \If{$\mu_{j} <= \phi$}
+                        \State $time = time + \mu_{j}$
+                        \State $\lambda_{j} = time$
+                        \State \textit{\textbf{Remove}} $P_{j}$ from $Q_{i}$
+                    \Else
+                        \State $time = time + \phi$
+                        \State $\mu_{j} = \mu_{j} - \phi$
+                        \If{$i < 5$}
+                            \State $\alpha_{j} = \alpha_{j} + 1$
+                        \EndIf
+                    \EndIf
+                    \If{Previous process $\neq P_{j}$}
+                        \State $time = time + \epsilon$
+                        \State $\delta = \delta + 1$
+                    \EndIf
+                \EndFor
+                \algrenewcommand\algorithmicfor{\textbf{for}}
             \EndFor
-            
-            % Calculating the quantum time value
-            \Statex Calculating the quantum time value:
-            \State $ascending\_sort(\beta_{Q_{i}})$
-            \State $\gamma = Q_{i}.size()/2 + i$
-            \State $\Gamma = \beta_{\gamma}$ where $\beta_{\gamma} \in Q_{i}$
-            % Assigning the quantum value to each process in the queue
-            \Statex Assigning the Quantum Value to each Process:
-            \For{$P_{j}$ in $Q_{i}$}
-                \State $\beta_{j} = \beta_{j} - \Gamma$
-                \If{$\beta_{j} <= 0$}
-                    \State \textbf{Remove} $P_{j}$ from $Q_{i}$
-                \ElsIf {$i < 4$}
-                    \State \textbf{Downgrade} $P_{j}$ to $Q_{i+1}$
-                \EndIf
-            \EndFor
-            % Increment waiting time
-            \Statex Increment Waiting Time:
-            \For{$j = 0$ to $n$ \textbf{and} $P_{j} \notin Q_{i}$}
-                \State $\omega_{j} = \omega_{j} + 1$
-            \EndFor
-            \Statex Increment Queue Index
-            \If{$i < 4$}
-                \State $i = i + 1$
-            \EndIf
         \EndWhile
-     \EndProcedure
+        \For{$i = 1$ to $n$}
+            $\tau_{j} = \lambda_{j} - \sigma_{j}$, $\theta_{j} = \tau_{j} - \beta_{j}$
+        \EndFor
+        \State \textbf{return} average of $\theta$, average of $\tau$, $n/time$
+        \EndProcedure
     \end{algorithmic}
 \end{algorithm}
 
@@ -225,7 +235,7 @@ Those procedures are repeated for all the generated queues until all processes r
 
 \subsection{Assumptions}
 
-The proposed scheduling algorithm is software simulated using a Python script which simulates scheduling independent CPU-bound processes on a single processor environment which guarantees that no more than a single process is getting scheduled at any arbitrary moment. Each process is assumed to have its own predetermined burst time, arrival time and the queue to which each one belongs.
+The proposed scheduling algorithm is software simulated using a Python script which simulates scheduling independent CPU-bound processes on a single processor environment which guarantees that no more than a single process is getting scheduled at any arbitrary moment. Each process is assumed to have its own predetermined burst time, arrival time and the queue to which each one belongs. The proposed approach is non-preemptive. For the sake of giving an example, if a process was lately introduced to a queue denoted by $Q_{i}$ prior to the current queue getting scheduled, it won't get scheduled until the current queue, its subsequent queues and the queues prior to $Q_{i}$ get scheduled.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% I/O %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -247,7 +257,7 @@ On one hand, the input arguments to the proposed algorithm implementation are th
     Throughput =  \frac{Number \; of \; Executed \; Processes}{Total \; Execution \; Time} \label{eq4}
 \end{equation}
 
-\vspace{4mm}
+% \vspace{4mm}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PERFORMANCE METRICS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -736,11 +746,13 @@ From the above simulations of different test cases and multiple performance comp
     coordinates {(Exp. 6,122.4) (Exp. 7,93.6)};
     \addplot[plot 2,bar group size={2}{3}, magenta]
     coordinates {(Exp. 6,148.2) (Exp. 7,152.2)};
-
+    
+    \legend{Proposed Algorithm,Dynamic RR MLFQ, Static RR MLFQ, Dyn. SJFRR MLFQ of \cite{b4},  Stat. SJFRR MLFQ of \cite{b4}, Dyn. SJFRR MLFQ of \cite{b5}, Stat. SJFRR MLFQ of \cite{b5}, VMLFQ, MLFQ, PMLFQ, Dynamic SRBRR, Static RR}
     \end{axis}
 \end{tikzpicture}
 \end{center}
 \caption{Comparison graph for average turnaround time}
+\vspace{45mm}
 \end{figure}
 
 \begin{figure}[H]
@@ -803,7 +815,7 @@ From the above simulations of different test cases and multiple performance comp
 
 \section{Conclusion and Future Work}
 
-The goal of this paper is to tackle different shortcomings associated with the standard MLFQ scheduling algorithm as well as its variants discussed in several papers. To resolve these deficiencies, we introduced different adjustable policies and techniques. It is evidently clear that those methods yield better CPU performance and optimize utilization by reducing the average waiting time as well as the average turnaround time. Despite experimenting numerous combinations of the parameters and scheduling policies by which the proposed MLFQ algorithm operates, we can say that there is yet a large room for experiment and improvement through finding better methods and policies which would make the algorithm more adaptable to the nature of the submitted processes and overall more enhanced.
+The goal of this paper is to tackle different shortcomings associated with the standard MLFQ scheduling algorithm as well as its variants discussed in several papers. To resolve these deficiencies, we introduced different adjustable policies and techniques. It is evidently clear that those methods yield better CPU performance and optimize utilization by reducing the average waiting time as well as the average turnaround time. Despite experimenting numerous combinations of the parameters and scheduling policies by which the proposed MLFQ algorithm operates, we can say that there is yet a large room for experiment and improvement through finding better methods and policies which would make the algorithm more adaptable to the nature of the submitted processes and overall more enhanced. For instance, adjusting the criteria by which the schedular decides whether to promote a process might further lessen starvation. Making the proposed algorithm preemptive might also aid mitigating starvation and render overall better performance. The possibilities are limitless.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% REFERENCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
